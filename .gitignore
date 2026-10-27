@@ -1,0 +1,36 @@
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+.nyc_output/
+*.zip
+
+# Hardhat
+artifacts/
+cache/
+typechain-types/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IPFS
+.ipfs/
+
+# Uploaded files
+uploads/
