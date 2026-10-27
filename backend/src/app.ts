@@ -1,3 +1,4 @@
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -16,13 +17,30 @@ import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-}));
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
-  credentials: true,
-}));
+// Allow requests from the deployed frontend and local development.
+const allowedOrigins = [
+  "https://blockchain-socialmediaapp-1.onrender.com",
+  "http://localhost:5173",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -30,12 +48,18 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
 app.use(limiter);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "..", "uploads"))
+);
+
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
@@ -45,20 +69,28 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/settings", settingsRoutes);
 
+// Root endpoint
 app.get("/", (_req, res) => {
   res.json({
     name: "DecentraSocial Backend API",
     status: "running",
     health: "/api/health",
-    frontend: process.env.CLIENT_URL || "http://localhost:5173",
+    frontend:
+      process.env.CLIENT_URL ||
+      "https://blockchain-socialmediaapp-1.onrender.com",
     timestamp: new Date().toISOString(),
   });
 });
 
+// Health check
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
 });
 
+// Error handler must remain last.
 app.use(errorHandler);
 
 export default app;
