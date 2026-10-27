@@ -1,6 +1,9 @@
+
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  "https://blockchain-socialmediaapp.onrender.com/api";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -14,6 +17,7 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
 
 api.interceptors.response.use(
   (response) => response,
